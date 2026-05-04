@@ -8,32 +8,30 @@ from model.VO.ClienteVO import ClienteVO
 class ClienteService:
 
     def listar(self) -> List[ClienteVO]:
-        with connection_factory() as conexion:
-            return ClienteDAO.listar(conexion)
+        with connection_factory() as conn:
+            return ClienteDAO.listar(conn)
 
     def obtener_por_id(self, id_cliente: int) -> Optional[ClienteVO]:
-        with connection_factory() as conexion:
-            return ClienteDAO.obtener_por_id(conexion, id_cliente)
+        with connection_factory() as conn:
+            return ClienteDAO.obtener_por_id(conn, id_cliente)
 
     def buscar_por_cedula(self, cedula: str) -> Optional[ClienteVO]:
-        with connection_factory() as conexion:
-            return ClienteDAO.buscar_por_cedula(conexion, cedula)
+        with connection_factory() as conn:
+            return ClienteDAO.buscar_por_cedula(conn, cedula)
 
     def registrar(self, cliente: ClienteVO) -> int:
         """
         Inserta un cliente nuevo.
         Reglas de negocio:
-          - La cédula debe ser única en el sistema.
           - Nombre, apellido y cédula son obligatorios.
-        Retorna el id generado.
+          - La cédula debe ser única.
         """
         if not cliente.nombre or not cliente.apellido or not cliente.cedula:
             raise ValueError("Nombre, apellido y cédula son obligatorios.")
 
-        with connection_factory() as conexion:
-            duplicado = ClienteDAO.buscar_por_cedula(conexion, cliente.cedula)
-            if duplicado is not None:
+        with connection_factory() as conn:
+            if ClienteDAO.buscar_por_cedula(conn, cliente.cedula) is not None:
                 raise ValueError(
                     f"Ya existe un cliente registrado con cédula '{cliente.cedula}'."
                 )
-            return ClienteDAO.insertar(conexion, cliente)
+            return ClienteDAO.insertar(conn, cliente)

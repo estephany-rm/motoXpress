@@ -8,13 +8,13 @@ from model.VO.EmpleadoVO import EmpleadoVO
 class EmpleadoService:
 
     def listar(self) -> List[EmpleadoVO]:
-        with connection_factory() as conexion:
-            return EmpleadoDAO.listar(conexion)
+        with connection_factory() as conn:
+            return EmpleadoDAO.listar(conn)
 
     def listar_por_rol(self, rol: str) -> List[EmpleadoVO]:
-        with connection_factory() as conexion:
-            return EmpleadoDAO.listar_por_rol(conexion, rol)
+        with connection_factory() as conn:
+            return EmpleadoDAO.listar_por_rol(conn, rol)
 
     def obtener_por_id(self, id_empleado: int) -> Optional[EmpleadoVO]:
-        with connection_factory() as conexion:
-            return EmpleadoDAO.obtener_por_id(conexion, id_empleado)
+        with connection_factory() as conn:
+            return EmpleadoDAO.obtener_por_id(conn, id_empleado)

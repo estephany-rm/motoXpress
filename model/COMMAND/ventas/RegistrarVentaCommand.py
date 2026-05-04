@@ -5,40 +5,43 @@ from model.DAO.MotoDAO import MotoDAO
 from model.DAO.FinanciacionDAO import FinanciacionDAO
 
 from model.VO.VentaVO import VentaVO
+from model.VO.FinanciacionVO import FinanciacionVO
+from typing import Optional
 
 
 class RegistrarVentaCommand:
 
-    def __init__(self, venta: VentaVO):
-        self.venta = venta
-        self.venta_id = None
-        self.moto_estado_anterior = None
-        self.financiacion = None
+    def __init__(self, venta: VentaVO,
+                 financiacion: Optional[FinanciacionVO] = None):
+        self._venta = venta
+        self._financiacion = financiacion
 
-    def execute(self, conn: ConexionSQLite3):
+        self._venta_id: Optional[int] = None
+        self._moto_estado_anterior: Optional[str] = None
 
-        if self.venta_id is None:
-            moto = MotoDAO.obtener_por_id(conn, self.venta.id_moto)
-            self.moto_estado_anterior = moto.estado
+    def execute(self, conn: ConexionSQLite3) -> None:
+        moto = MotoDAO.obtener_por_id(conn, self._venta.id_moto)
+        self._moto_estado_anterior = moto.estado
 
-            self.venta_id = VentaDAO.insertar(conn, self.venta)
-            self.venta.id_venta = self.venta_id
+        self._venta_id = VentaDAO.insertar(conn, self._venta)
+        self._venta.id_venta = self._venta_id
 
-            moto.estado = "vendida"
-            MotoDAO.actualizar(conn, moto)
-
-            if self.venta.es_financiada:
-                self.financiacion = self.venta.financiacion
-
-        else:
-            self.venta_id = VentaDAO.insertar(conn, self.venta)
-
-    def undo(self, conn: ConexionSQLite3):
-        VentaDAO.eliminar(conn, self.venta_id)
-
-        moto = MotoDAO.obtener_por_id(conn, self.venta.id_moto)
-        moto.estado = self.moto_estado_anterior
+        moto.estado = "vendida"
         MotoDAO.actualizar(conn, moto)
 
-        if self.financiacion is not None:
-            FinanciacionDAO.eliminar(conn, self.financiacion.id_financiacion)
+        if self._financiacion is not None:
+            self._financiacion.id_venta = self._venta_id
+            FinanciacionDAO.insertar(conn, self._financiacion)
+
+    def undo(self, conn: ConexionSQLite3) -> None:
+        if self._venta_id is None:
+            raise RuntimeError("No se puede deshacer: el comando no ha sido ejecutado.")
+
+        VentaDAO.eliminar(conn, self._venta_id)
+
+        moto = MotoDAO.obtener_por_id(conn, self._venta.id_moto)
+        moto.estado = self._moto_estado_anterior
+        MotoDAO.actualizar(conn, moto)
+
+        if self._financiacion is not None and self._financiacion.id_financiacion is not None:
+            FinanciacionDAO.eliminar(conn, self._financiacion.id_financiacion)

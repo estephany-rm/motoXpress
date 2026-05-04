@@ -8,9 +8,9 @@ from model.VO.CategoriaVO import CategoriaVO
 class CategoriaService:
 
     def listar_todas(self) -> List[CategoriaVO]:
-        with connection_factory() as conexion:
-            return CategoriaDAO.listar_todas(conexion)
+        with connection_factory() as conn:
+            return CategoriaDAO.listar_todas(conn)
 
     def obtener_por_id(self, id_categoria: int) -> Optional[CategoriaVO]:
-        with connection_factory() as conexion:
-            return CategoriaDAO.obtener_por_id(conexion, id_categoria)
+        with connection_factory() as conn:
+            return CategoriaDAO.obtener_por_id(conn, id_categoria)
