@@ -1,3 +1,4 @@
+import os
 import sqlite3
 from sqlite3 import Connection
 from typing import Optional
@@ -53,7 +54,7 @@ class ConexionSQLite3:
 
         return False   
 
-_DB_PATH = "db/concesionario.db"
+_DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "concesionario.db")
 
 
 def connection_factory() -> ConexionSQLite3:
