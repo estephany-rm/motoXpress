@@ -15,16 +15,21 @@ class MotoVO:
     color: str = field(default=None)
     estado: str = field(default='disponible')
 
-    # Lazy loading de categorias asociadas
+    # relacion de agregacion
+    categorias: List[CategoriaVO] = field(default_factory=list)
+
+    # Lazy opcional
     _categorias_loader: Optional[Callable[[], List[CategoriaVO]]] = field(default=None, repr=False)
-    _categorias_cache:  Optional[List[CategoriaVO]]               = field(default=None, repr=False)
+
+    def cargar_categorias(self):
+        if not self.categorias and self._categorias_loader:
+            self.categorias = self._categorias_loader()
 
     @property
-    def categorias(self) -> Optional[List[CategoriaVO]]:
-        if self._categorias_cache is None and self._categorias_loader is not None:
-            self._categorias_cache = self._categorias_loader()
-        return self._categorias_cache
+    def esta_disponible(self) -> bool:
+        return self.estado == 'disponible'
 
-    @property
-    def categorias_cargadas(self) -> bool:
-        return self._categorias_cache is not None
+    def marcar_como_vendida(self):
+        if not self.esta_disponible:
+            raise ValueError("La moto ya está vendida")
+        self.estado = 'vendida'
